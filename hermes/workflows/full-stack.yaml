@@ -1,0 +1,217 @@
+# Hermes workflow: full-stack
+# The master DAG. Runs all four phases in order, halts at every gate.
+#
+# Invoke with:
+#   hermes run hermes/workflows/full-stack.yaml --goal "<one-line goal>"
+#
+# Required environment:
+#   - claude CLI on PATH (Claude Code)
+#   - hermes >= 0.13.0
+
+name: full-stack
+version: 1.0.0
+description: PM → Design → Dev → OPS with gated handoffs
+
+defaults:
+  worker: claude-code              # use Claude Code as the execution harness
+  worker_mode: print               # one-shot per task; no interactive TUI
+  max_turns_per_task: 30
+  timeout_seconds: 600
+  retry_on_error: 1
+
+budget:
+  total_iterations: 90             # shared across the entire DAG
+  total_usd: 5.00
+  per_phase_usd: 1.50
+
+inputs:
+  - name: goal
+    type: file
+    path: artifacts/A-pm/goal.md
+    required: true
+
+artifacts_dir: artifacts/
+
+# ----------------------------------------------------------------------------
+# Phase A · PM / Direction
+# ----------------------------------------------------------------------------
+phases:
+  - id: A-pm
+    name: PM / Direction
+    output_dir: artifacts/A-pm/
+    tasks:
+      - id: brainstorm
+        skill: development/brainstorming
+        prompt: |
+          Read the goal from {{ inputs.goal }}.
+          Produce 5-7 distinct framings of the problem.
+          Output: artifacts/A-pm/framings.md
+        outputs: [artifacts/A-pm/framings.md]
+
+      - id: prompt-spec
+        skill: development/senior-prompt-engineer
+        depends_on: [brainstorm]
+        prompt: |
+          Using the chosen framing from artifacts/A-pm/framings.md, write a
+          structured PRD with: problem, users, success metrics, non-goals.
+          Output: artifacts/A-pm/prd.md
+        outputs: [artifacts/A-pm/prd.md]
+
+      - id: leverage-superpowers
+        skill: development/using-superpowers
+        depends_on: [prompt-spec]
+        prompt: |
+          Audit the PRD against known leverage patterns. Flag any spot where a
+          standard tool or workflow would 10x the effort. Append to PRD.
+        outputs: [artifacts/A-pm/prd.md]
+
+    gate:
+      artifact: artifacts/A-pm/gate.md
+      approval_file: artifacts/A-pm/APPROVED
+      generator: |
+        Summarize prd.md in 8 bullets. Include: problem, primary user,
+        top 3 success metrics, explicit non-goals, biggest risk.
+
+  # --------------------------------------------------------------------------
+  # Phase B · Design
+  # --------------------------------------------------------------------------
+  - id: B-design
+    name: Design
+    depends_on: [A-pm]
+    output_dir: artifacts/B-design/
+    tasks:
+      - id: ux-research
+        skill: creative-design/ux-researcher-designer
+        prompt: |
+          Read artifacts/A-pm/prd.md. Produce user journey maps for the primary
+          persona, covering happy path + 2 edge cases.
+          Output: artifacts/B-design/journeys.md
+        outputs: [artifacts/B-design/journeys.md]
+
+      - id: frontend-design
+        skill: creative-design/frontend-design
+        depends_on: [ux-research]
+        prompt: |
+          For each journey, produce a wireframe spec (textual is fine — list
+          screens, components, states). Define design tokens in
+          artifacts/B-design/tokens.json (color, type scale, spacing scale).
+        outputs:
+          - artifacts/B-design/wireframes.md
+          - artifacts/B-design/tokens.json
+
+    gate:
+      artifact: artifacts/B-design/gate.md
+      approval_file: artifacts/B-design/APPROVED
+      generator: |
+        List every screen, component, and design token. Flag any contrast
+        ratio below 4.5:1 for text.
+
+  # --------------------------------------------------------------------------
+  # Phase C · Development
+  # --------------------------------------------------------------------------
+  - id: C-dev
+    name: Development
+    depends_on: [B-design]
+    output_dir: artifacts/C-dev/
+    tasks:
+      - id: architect
+        skill: development/senior-architect
+        prompt: |
+          Given the PRD and wireframes, produce an architecture diagram (mermaid
+          or ascii), a service breakdown, and a data model.
+          Output: artifacts/C-dev/architecture.md
+        outputs: [artifacts/C-dev/architecture.md]
+
+      - id: backend
+        skill: development/senior-backend
+        depends_on: [architect]
+        parallel_group: build
+        prompt: |
+          Implement the backend services described in architecture.md.
+          Code goes under src/server/. Tests go under tests/server/.
+        outputs: [src/server/, tests/server/]
+
+      - id: frontend
+        skill: development/senior-frontend
+        depends_on: [architect]
+        parallel_group: build      # runs in parallel with backend
+        prompt: |
+          Implement the frontend screens from wireframes.md using the tokens
+          from tokens.json. Code goes under src/client/.
+        outputs: [src/client/, tests/client/]
+
+      - id: review
+        skill: development/code-reviewer
+        depends_on: [backend, frontend]
+        prompt: |
+          Review every file under src/ added or changed in this run. Block on:
+          missing tests, untyped public APIs, secrets in code, dead code.
+          Output: artifacts/C-dev/review.md
+        outputs: [artifacts/C-dev/review.md]
+
+    gate:
+      artifact: artifacts/C-dev/gate.md
+      approval_file: artifacts/C-dev/APPROVED
+      generator: |
+        Summarize review.md. List blocked items (must-fix) vs nits (optional).
+        Report test coverage. Confirm build runs from clean checkout.
+
+  # --------------------------------------------------------------------------
+  # Phase D · OPS
+  # --------------------------------------------------------------------------
+  - id: D-ops
+    name: OPS
+    depends_on: [C-dev]
+    output_dir: artifacts/D-ops/
+    tasks:
+      - id: qa
+        skill: development/senior-qa
+        prompt: |
+          Run the full test suite, expand coverage to ≥70% on new modules,
+          add e2e tests for primary journeys.
+          Output: artifacts/D-ops/qa-report.md
+        outputs: [artifacts/D-ops/qa-report.md, tests/e2e/]
+
+      - id: security
+        skill: development/senior-security
+        depends_on: [qa]
+        prompt: |
+          Threat model the system, scan dependencies, check secrets handling,
+          authn/authz flows. Output: artifacts/D-ops/security-audit.md
+        outputs: [artifacts/D-ops/security-audit.md]
+
+      - id: devops
+        skill: development/senior-devops
+        depends_on: [security]
+        prompt: |
+          Produce a CI/CD pipeline (.github/workflows/ or equivalent), Dockerfile,
+          deployment manifest, rollback runbook.
+          Output: deploy/ and .github/workflows/
+        outputs: [deploy/, .github/workflows/, docs/runbook.md]
+
+    gate:
+      artifact: artifacts/D-ops/gate.md
+      approval_file: artifacts/D-ops/APPROVED
+      generator: |
+        Summarize qa-report, security-audit, and the deploy plan. The gate
+        FAILS automatically if security-audit lists any critical findings.
+
+# ----------------------------------------------------------------------------
+# Observability — Hermes pushes events here
+# ----------------------------------------------------------------------------
+observability:
+  kanban: .hermes-state/kanban.json
+  events_log: .hermes-state/events.jsonl
+  cost_log: .hermes-state/cost.jsonl
+
+# ----------------------------------------------------------------------------
+# Failure handling
+# ----------------------------------------------------------------------------
+on_failure:
+  - notify: stderr
+  - write: artifacts/failure-{{ phase }}-{{ task }}.md
+  - halt: true                     # don't auto-advance past a failure
+
+on_gate_rejection:
+  - reopen_phase: true
+  - clear_outputs: false           # keep previous outputs for diff

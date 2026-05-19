@@ -1,0 +1,30 @@
+{
+  "name": "orchestration-template",
+  "version": "1.1.0",
+  "description": "Hermes + Claude Code orchestration template with 11 aitmpl skills",
+  "private": true,
+  "scripts": {
+    "bootstrap": "bash scripts/bootstrap.sh",
+    "bootstrap:skills-only": "bash scripts/bootstrap.sh --skills-only",
+    "bootstrap:check": "bash scripts/bootstrap.sh --check",
+    "request": "claude -p \"/triage $npm_config_task\"",
+    "task": "claude -p \"/task $npm_config_task\"",
+    "sprint": "hermes run hermes/workflows/sprint.yaml --tasks \"$npm_config_tasks\"",
+    "listen:slack": "python3 scripts/request_listener.py --channel slack --port 3000",
+    "listen:linear": "python3 scripts/request_listener.py --channel linear --port 3001",
+    "listen:notion": "python3 scripts/request_listener.py --channel notion",
+    "listen:stdin": "python3 scripts/request_listener.py --channel stdin",
+    "kickoff": "claude -p \"/kickoff $npm_config_goal\"",
+    "phase:A": "hermes run hermes/workflows/phase-A.yaml",
+    "phase:B": "hermes run hermes/workflows/phase-B.yaml",
+    "phase:C": "hermes run hermes/workflows/phase-C.yaml",
+    "phase:D": "hermes run hermes/workflows/phase-D.yaml",
+    "ship": "claude -p \"/ship\"",
+    "validate": "hermes validate hermes/workflows/full-stack.yaml",
+    "kanban": "cat .hermes-state/kanban.json | npx --yes prettier --parser json"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": ["hermes", "claude-code", "orchestration", "aitmpl", "agent"]
+}

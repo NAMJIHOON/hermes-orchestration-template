@@ -1,0 +1,10 @@
+# Phase B · Design — standalone runner
+name: phase-B
+extends: full-stack.yaml
+run_only: [B-design]
+
+inputs:
+  - name: prd
+    type: file
+    path: artifacts/A-pm/prd.md
+    required: true

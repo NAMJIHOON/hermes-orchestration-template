@@ -1,0 +1,93 @@
+# Hermes subagent registry
+# Maps human-friendly agent names to (skill, default toolset, budget) tuples.
+# Used by workflow YAMLs via the `skill:` field.
+
+version: 1.0.0
+
+agents:
+  # ---- Phase A · PM ----
+  prompt_engineer:
+    skill: development/senior-prompt-engineer
+    install: npx claude-code-templates@latest --skill development/senior-prompt-engineer
+    toolset: [Read, Write, Edit, WebSearch]
+    max_turns: 20
+
+  brainstormer:
+    skill: development/brainstorming
+    install: npx claude-code-templates@latest --skill development/brainstorming
+    toolset: [Read, Write, WebSearch]
+    max_turns: 15
+
+  superpowers:
+    skill: development/using-superpowers
+    install: npx claude-code-templates@latest --skill development/using-superpowers
+    toolset: [Read, Write, Edit, Bash]
+    max_turns: 20
+
+  # ---- Phase B · Design ----
+  frontend_designer:
+    skill: creative-design/frontend-design
+    install: npx claude-code-templates@latest --skill creative-design/frontend-design
+    toolset: [Read, Write, Edit]
+    max_turns: 25
+
+  ux_researcher:
+    skill: creative-design/ux-researcher-designer
+    install: npx claude-code-templates@latest --skill creative-design/ux-researcher-designer
+    toolset: [Read, Write, WebSearch]
+    max_turns: 20
+
+  # ---- Phase C · Development ----
+  architect:
+    skill: development/senior-architect
+    install: npx claude-code-templates@latest --skill development/senior-architect
+    toolset: [Read, Write, Edit, Bash]
+    max_turns: 30
+
+  frontend_dev:
+    skill: development/senior-frontend
+    install: npx claude-code-templates@latest --skill development/senior-frontend
+    toolset: [Read, Write, Edit, Bash(npm:*), Bash(npx:*)]
+    max_turns: 40
+
+  backend_dev:
+    skill: development/senior-backend
+    install: npx claude-code-templates@latest --skill development/senior-backend
+    toolset: [Read, Write, Edit, Bash(python:*), Bash(pytest:*), Bash(npm:*)]
+    max_turns: 40
+
+  code_reviewer:
+    skill: development/code-reviewer
+    install: npx claude-code-templates@latest --skill development/code-reviewer
+    toolset: [Read, Bash(git:diff), Bash(git:log), Bash(eslint:*), Bash(ruff:*)]
+    max_turns: 20
+
+  # ---- Phase D · OPS ----
+  qa_engineer:
+    skill: development/senior-qa
+    install: npx claude-code-templates@latest --skill development/senior-qa
+    toolset: [Read, Write, Edit, Bash(pytest:*), Bash(npm:test), Bash(npm:run:e2e)]
+    max_turns: 30
+
+  devops:
+    skill: development/senior-devops
+    install: npx claude-code-templates@latest --skill development/senior-devops
+    toolset: [Read, Write, Edit, Bash(docker:*), Bash(kubectl:*), Bash(gh:*)]
+    max_turns: 30
+
+  security:
+    skill: development/senior-security
+    install: npx claude-code-templates@latest --skill development/senior-security
+    toolset: [Read, Bash(npm:audit), Bash(pip:audit), WebSearch]
+    max_turns: 25
+
+# Default invocation pattern Hermes uses for any of the above:
+#   claude -p "$PROMPT" \
+#     --allowedTools "$TOOLSET" \
+#     --max-turns "$MAX_TURNS" \
+#     --skill "$SKILL"
+invocation_template: |
+  claude -p "{{ prompt }}" \
+    --allowedTools "{{ toolset | join(',') }}" \
+    --max-turns {{ max_turns }} \
+    --skill "{{ skill }}"

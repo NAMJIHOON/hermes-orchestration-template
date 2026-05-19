@@ -1,0 +1,34 @@
+# Hermes runtime state
+.hermes-state/
+
+# Phase artifacts — generated at runtime (keep only .gitkeep)
+artifacts/A-pm/*
+artifacts/B-design/*
+artifacts/C-dev/*
+artifacts/D-ops/*
+artifacts/draft/
+!artifacts/**/.gitkeep
+
+# Skill installs (committed via lock or fresh each clone — pick one)
+.claude/skills/*/node_modules/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+/tmp/skill-install.log
+*.log

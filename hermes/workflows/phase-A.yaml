@@ -1,0 +1,12 @@
+# Phase A · PM / Direction — standalone runner
+# Use when you want to re-run only Phase A without touching B/C/D.
+
+name: phase-A
+extends: full-stack.yaml
+run_only: [A-pm]
+
+inputs:
+  - name: goal
+    type: file
+    path: artifacts/A-pm/goal.md
+    required: true

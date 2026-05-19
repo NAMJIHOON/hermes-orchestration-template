@@ -1,0 +1,10 @@
+# Phase D · OPS — standalone runner
+name: phase-D
+extends: full-stack.yaml
+run_only: [D-ops]
+
+inputs:
+  - name: src
+    type: dir
+    path: src/
+    required: true

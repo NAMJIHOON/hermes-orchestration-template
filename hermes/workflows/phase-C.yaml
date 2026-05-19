@@ -1,0 +1,14 @@
+# Phase C · Development — standalone runner
+name: phase-C
+extends: full-stack.yaml
+run_only: [C-dev]
+
+inputs:
+  - name: prd
+    type: file
+    path: artifacts/A-pm/prd.md
+    required: true
+  - name: design
+    type: dir
+    path: artifacts/B-design/
+    required: true
