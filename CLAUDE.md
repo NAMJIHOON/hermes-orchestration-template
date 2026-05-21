@@ -45,6 +45,30 @@ When in doubt, run **`/kickoff`** to enter the full DAG from Phase A.
 
 ---
 
+## Execution mode — when to use Hermes vs. direct execution
+
+**Always decide this first before doing any work.**
+
+| 상황 | 실행 모드 |
+|------|----------|
+| 목표가 모호하거나 기획부터 시작 ("새 기능 만들어줘") | **Hermes 풀 파이프라인** — Phase A→B→C→D |
+| 설계 산출물은 있지만 구현이 필요 ("B 게이트 통과, 개발 시작") | **Hermes Phase C**부터 진입 |
+| `artifacts/sprint/sprint-N-tasks.md` 파일이 존재하고 태스크가 명확히 정의됨 | **직접 실행 (Claude Code)** — Hermes 불필요 |
+| 버그 수정 / 핫픽스 / 단일 파일 수정 | **직접 실행 (Claude Code)** |
+| 분석·리뷰만 필요 (코드 작성 없음) | **직접 실행 (Claude Code)** |
+
+### 스프린트 태스크 판단 기준
+
+`artifacts/sprint/sprint-N-tasks.md`가 있을 때 다음을 확인하라:
+
+1. 태스크마다 **파일 경로**와 **구체적 변경 내용**이 명시되어 있는가? → 직접 실행
+2. "무엇을 만들지"가 아직 결정 안 된 태스크가 있는가? → 해당 태스크는 Phase A부터
+
+> **원칙**: 스프린트는 이미 A→B 단계를 거친 결과물이다.
+> 다시 파이프라인을 태우는 것은 낭비다. 바로 실행하라.
+
+---
+
 ## Hermes invocation
 
 The Hermes orchestrator reads `hermes/workflows/*.yaml`. The default workflow is
