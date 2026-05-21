@@ -26,6 +26,12 @@ SKILLS=(
   "development/senior-security"
 )
 
+# External skills (installed via `npx skills add <repo>`)
+# Format: "github-repo-url::skill-name"
+EXTERNAL_SKILLS=(
+  "https://github.com/coreyhaines31/marketingskills::marketing-psychology"
+)
+
 MODE="full"
 for arg in "$@"; do
   case "$arg" in
@@ -111,6 +117,30 @@ if [ ${#FAILED[@]} -gt 0 ]; then
 fi
 
 ok "All skills installed"
+
+# ----- Install external skills ----------------------------------------------
+if [ ${#EXTERNAL_SKILLS[@]} -gt 0 ]; then
+  step "Installing ${#EXTERNAL_SKILLS[@]} external skill(s)"
+  EXT_FAILED=()
+  for entry in "${EXTERNAL_SKILLS[@]}"; do
+    repo="${entry%%::*}"
+    skill="${entry##*::}"
+    printf "  installing %-50s " "$skill"
+    if npx --yes skills add "$repo" --skill "$skill" >/tmp/skill-install.log 2>&1; then
+      printf "${GREEN}ok${NC}\n"
+    else
+      printf "${RED}failed${NC}\n"
+      EXT_FAILED+=("$skill")
+    fi
+  done
+
+  if [ ${#EXT_FAILED[@]} -gt 0 ]; then
+    warn "Some external skills failed to install (non-blocking):"
+    for s in "${EXT_FAILED[@]}"; do echo "    - $s"; done
+  else
+    ok "All external skills installed"
+  fi
+fi
 
 # ----- State directory ------------------------------------------------------
 step "Setting up .hermes-state/"

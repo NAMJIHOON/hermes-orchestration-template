@@ -65,6 +65,21 @@ phases:
           standard tool or workflow would 10x the effort. Append to PRD.
         outputs: [artifacts/A-pm/prd.md]
 
+      - id: conversion-strategy
+        skill: marketing-psychology
+        depends_on: [leverage-superpowers]
+        prompt: |
+          Read artifacts/A-pm/prd.md.
+          Apply behavioral science and marketing psychology to the product:
+          1. Identify the 3 highest-leverage conversion moments in the user journey
+             (e.g. signup, paywall, re-engagement).
+          2. For each moment, recommend 2-3 specific psychological principles
+             (loss aversion, anchoring, social proof, goal-gradient, etc.)
+             and how they should shape the UX copy, layout, and flow.
+          3. Flag any friction points or anti-patterns that would hurt conversion.
+          Output: artifacts/A-pm/conversion-strategy.md
+        outputs: [artifacts/A-pm/conversion-strategy.md]
+
     gate:
       artifact: artifacts/A-pm/gate.md
       approval_file: artifacts/A-pm/APPROVED

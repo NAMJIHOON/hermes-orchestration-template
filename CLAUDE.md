@@ -1,7 +1,8 @@
 # Project Orchestration Context
 
 This project uses a **Hermes (orchestrator) + Claude Code (harness/worker)** stack
-with 11 specialist skills sourced from [aitmpl.com](https://www.aitmpl.com/).
+with 11 specialist skills sourced from [aitmpl.com](https://www.aitmpl.com/),
+plus 1 external skill (`marketing-psychology` — coreyhaines31/marketingskills).
 
 Hermes owns the workflow DAG and quality gates. Claude Code executes the actual
 file edits, code generation, and tool calls. Skills are the role definitions that
@@ -13,7 +14,7 @@ get loaded per phase.
 
 | Phase | Skills | Output |
 |-------|--------|--------|
-| **A · PM / Direction** | `senior-prompt-engineer`, `brainstorming`, `using-superpowers` | PRD, problem statement, requirements |
+| **A · PM / Direction** | `senior-prompt-engineer`, `brainstorming`, `using-superpowers`, `marketing-psychology` | PRD, problem statement, requirements, conversion strategy |
 | **B · Design** | `frontend-design`, `ux-researcher-designer` | Wireframes, design tokens, user flows |
 | **C · Development** | `senior-architect`, `senior-frontend`, `senior-backend`, `code-reviewer` | Implementation, PR-ready code |
 | **D · OPS** | `senior-qa`, `senior-devops`, `senior-security` | Tests, CI/CD, security audit, ship |
@@ -28,6 +29,7 @@ artifact is checked in. See `docs/orchestration.md` for the full gate spec.
 When Claude Code is invoked **directly** (without Hermes orchestrating), pick the
 skill by the verb in the user request:
 
+- "psychology / mental models / why people buy / conversion / persuasion / pricing / loss aversion / social proof / anchoring / scarcity" → `marketing-psychology`
 - "brainstorm / explore / what should we build" → `brainstorming`
 - "write the prompt / improve the system prompt" → `senior-prompt-engineer`
 - "design / mock / wireframe / UI" → `frontend-design` (visual) or `ux-researcher-designer` (research)
