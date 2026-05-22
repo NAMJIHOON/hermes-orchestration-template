@@ -69,6 +69,34 @@ When in doubt, run **`/kickoff`** to enter the full DAG from Phase A.
 
 ---
 
+## 스프린트 준비 프로토콜 ← 필수
+
+**"다음 스프린트 준비해줘"** 요청이 오면 반드시 아래 4개 관점을 **모두** 포함해 분석 문서를 작성하라.
+하나라도 빠지면 불완전한 스프린트 준비다.
+
+### 필수 4관점
+
+| 관점 | 담당 스킬 | 핵심 질문 |
+|------|----------|----------|
+| 🎯 **기획(PM)** | `brainstorming`, `using-superpowers` | 지표 위험은? 다음 성장 레버는? |
+| 📣 **마케팅** | `marketing-psychology` | 전환/리텐션에 쓸 심리 원칙은? 어떤 카피/프레이밍이 효과적? |
+| 🎨 **디자인** | `frontend-design` | 시각적 완성도 갭은? 컴포넌트·패턴 일관성 문제는? |
+| 🧭 **UX** | `ux-researcher-designer` | 사용자 흐름 단절 지점은? 다음 액션 명확성은? |
+
+### 산출물 형식
+
+```
+artifacts/sprint/sprint-N-analysis.md   ← 4관점 분석 + 우선순위 매트릭스
+artifacts/sprint/sprint-N-tasks.md      ← 태스크별 파일 경로 + 구체적 변경 내용
+```
+
+각 태스크에는 반드시 다음을 명시:
+- 어느 관점(PM/마케팅/디자인/UX)에서 요청된 것인지
+- 대상 파일 경로 (신규 파일이면 `(신규)` 표기)
+- 구체적 UI/로직 변경 내용 (의사코드 또는 JSX 스케치 수준)
+
+---
+
 ## Hermes invocation
 
 The Hermes orchestrator reads `hermes/workflows/*.yaml`. The default workflow is
